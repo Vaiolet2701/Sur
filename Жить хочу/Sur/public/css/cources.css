@@ -1,0 +1,292 @@
+
+/* Стили для формы фильтрации */
+.filter-form {
+    background-color: #7c7c7c;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+  }
+  
+  .filter-form .row {
+    margin-bottom: 1rem;
+  }
+  
+  .filter-form label {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    display: block;
+  }
+  
+  .filter-form .form-control {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+  }
+  
+  .filter-form .btn {
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .filter-form .btn-secondary {
+    background-color: #6c757d;
+    border: none;
+    color: #fff;
+  }
+  
+  .filter-form .btn-secondary:hover {
+    background-color: #5a6268;
+  }
+  
+  /* Стили для карточек курсов */
+  .courses-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* Три карточки в ряд */
+    gap: 20px; /* Расстояние между карточками */
+  }
+  
+  .course-card {
+    background-color: #2E2E2E;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 15px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .course-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  }
+  
+  .course-card h2 {
+    font-size: 1.25rem; /* Уменьшенный размер заголовка */
+    margin-bottom: 0.75rem;
+    color: #ffffff;
+  }
+  
+  .course-card p {
+    font-size: 0.875rem; /* Уменьшенный размер текста */
+    color: #8b8989;
+    margin-bottom: 0.5rem;
+  }
+  
+  .course-card img {
+    width: 100%;
+    height: 150px; /* Фиксированная высота изображения */
+    object-fit: cover; /* Обрезка изображения */
+    border-radius: 8px;
+    margin-bottom: 1rem;
+  }
+  
+  .course-card p:last-child {
+    margin-bottom: 0;
+  }
+  
+  /* Адаптивность */
+  @media (max-width: 768px) {
+    .filter-form .row {
+        flex-direction: column;
+    }
+  
+    .filter-form .col-md-3,
+    .filter-form .col-md-2 {
+        width: 100%;
+        margin-bottom: 1rem;
+    }
+  
+    .filter-form .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+  
+    .courses-grid {
+        grid-template-columns: repeat(2, 1fr); /* Две карточки в ряд на мобильных */
+    }
+  
+    .course-card {
+        padding: 10px;
+    }
+  
+    .course-card h2 {
+        font-size: 1.1rem;
+    }
+  
+    .course-card p {
+        font-size: 0.8rem;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .courses-grid {
+        grid-template-columns: 1fr; /* Одна карточка в ряд на очень маленьких экранах */
+    }
+  }
+
+
+
+/* Заголовок курса */
+h1 {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #ffffff;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+/* Сетка для основного контента и формы */
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.col-md-8, .col-md-4 {
+  flex: 1;
+  min-width: 300px;
+}
+
+/* Стили для изображения курса */
+.img-fluid {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Стили для списка информации о курсе */
+.list-group {
+  margin-bottom: 20px;
+}
+
+.list-group-item {
+  padding: 15px;
+  border: 1px solid #444;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  background-color: #3E3E3E;
+  color: #ffffff;
+}
+
+.list-group-item strong {
+  color: #ffffff;
+}
+
+/* Стили для карточки формы записи */
+.card {
+  border: 1px solid #444;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  background-color: #3E3E3E;
+}
+
+.card-body {
+  padding: 20px;
+}
+
+.card-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #ffffff;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+/* Стили для формы */
+.form-label {
+  font-weight: bold;
+  color: #ffffff;
+  margin-bottom: 5px;
+}
+
+.form-control {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #444;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  font-size: 1rem;
+  color: #ffffff;
+  background-color: #2E2E2E;
+}
+
+.form-control:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+  outline: none;
+}
+
+/* Стили для радио-кнопок */
+.form-check-inline {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 15px;
+}
+
+.form-check-input {
+  margin-right: 5px;
+}
+
+.form-check-label {
+  color: #ffffff;
+}
+
+/* Стили для текстового поля */
+textarea.form-control {
+  resize: vertical;
+  min-height: 100px;
+}
+
+
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+  .row {
+      flex-direction: column;
+  }
+
+  .col-md-8, .col-md-4 {
+      width: 100%;
+  }
+
+  h1 {
+      font-size: 1.75rem;
+  }
+
+  .card-title {
+      font-size: 1.25rem;
+  }
+
+  .form-control {
+      font-size: 0.9rem;
+  }
+
+  .btn-primary {
+      font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  h1 {
+      font-size: 1.5rem;
+  }
+
+  .card-title {
+      font-size: 1.1rem;
+  }
+
+  .form-control {
+      font-size: 0.8rem;
+  }
+
+  .btn-primary {
+      font-size: 0.8rem;
+  }
+}

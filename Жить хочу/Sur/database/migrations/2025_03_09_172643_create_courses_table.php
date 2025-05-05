@@ -1,0 +1,54 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('courses', function (Blueprint $table) {
+            $table->id();
+            $table->string('title');
+            $table->text('description');
+            $table->unsignedBigInteger('course_category_id');
+            $table->date('start_date')->nullable();
+            $table->date('end_date')->nullable();
+            $table->string('image_path')->nullable();
+            $table->integer('min_people')->nullable();
+            $table->integer('max_people')->nullable();
+            $table->unsignedBigInteger('teacher_id')->nullable(); // Может быть NULL
+            $table->text('animals')->nullable();
+            $table->decimal('price', 8, 2)->nullable();
+            $table->decimal('latitude', 10, 7)->nullable();
+            $table->decimal('longitude', 10, 7)->nullable();
+            $table->string('location_name')->nullable(); // Название места
+            $table->boolean('is_active')->default(true); // Рекомендую добавить флаг активности
+            $table->timestamps();
+
+            // Внешний ключ для категории
+            $table->foreign('course_category_id')
+                  ->references('id')
+                  ->on('course_categories')
+                  ->onDelete('cascade');
+
+            // Внешний ключ для преподавателя с установкой NULL при удалении
+            $table->foreign('teacher_id')
+                  ->references('id')
+                  ->on('users')
+                  ->onDelete('set null'); // При удалении преподавателя ставится NULL
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('courses');
+    }
+};
