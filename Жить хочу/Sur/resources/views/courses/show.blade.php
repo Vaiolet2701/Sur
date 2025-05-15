@@ -1,62 +1,67 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
-    <h1>{{ $course->title }}</h1>
-    <div class="row">
-        <div class="col-md-8">
-            @if($course->image_path)
-                <img src="{{ asset($course->image_path) }}" class="img-fluid mb-4" alt="{{ $course->title }}">
-            @endif
-            <p>{{ $course->description }}</p>
-            <ul class="list-group mb-4">
-                <li class="list-group-item">
-                    <strong>Даты:</strong> 
-                    {{ \Carbon\Carbon::parse($course->start_date)->format('d.m.Y') }} - {{ \Carbon\Carbon::parse($course->end_date)->format('d.m.Y') }}
-                </li>
-                <li class="list-group-item">
-                    <strong>Количество участников:</strong> 
-                    {{ $course->min_people }} - {{ $course->max_people }} человек
-                </li>
-                <li class="list-group-item">
-                    <strong>Преподаватель:</strong>
-                    @if($course->teacher)
-                        <div class="d-flex align-items-center mt-2">
-                            @if($course->teacher->image_path)
-                                <img src="{{ asset($course->teacher->image_path) }}" 
-                                    class="rounded-circle me-3" width="50" height="50" 
-                                    alt="{{ $course->teacher->name }}">
+<div class="container course-page-container">
+    <div class="course-card">
+        <h1>{{ $course->title }}</h1>
+        <div class="row">
+            <!-- Основная информация о курсе -->
+            <div class="col-md-8">
+                @if($course->image_path)
+                    <img src="{{ asset($course->image_path) }}" class="img-fluid mb-4" alt="{{ $course->title }}">
+                @endif
+                <p>{{ $course->description }}</p>
+                <div class="course-info-section">
+                    <ul>
+                        <li>
+                            <strong>Даты:</strong> 
+                            {{ \Carbon\Carbon::parse($course->start_date)->format('d.m.Y') }} - {{ \Carbon\Carbon::parse($course->end_date)->format('d.m.Y') }}
+                        </li>
+                        <li>
+                            <strong>Количество участников:</strong> 
+                            {{ $course->min_people }} - {{ $course->max_people }} человек
+                        </li>
+                        <li>
+                            <strong>Преподаватель:</strong>
+                            @if($course->teacher)
+                                <div class="teacher-info mt-2">
+                                    @if($course->teacher->image_path)
+                                        <img src="{{ asset($course->teacher->image_path) }}" 
+                                             class="rounded-circle me-3" width="50" height="50" 
+                                             alt="{{ $course->teacher->name }}">
+                                    @endif
+                                    <div>
+                                        <h5>{{ $course->teacher->name }}</h5>
+                                        @if($course->teacher->work_experience)
+                                            <small class="text-muted">
+                                                Опыт работы: {{ $course->teacher->work_experience }} лет
+                                            </small>
+                                        @endif
+                                        @if($course->teacher->bio)
+                                            <p>{{ $course->teacher->bio }}</p>
+                                        @endif
+                                    </div>
+                                </div>
+                            @else
+                                <span class="text-muted">Не назначен</span>
                             @endif
-                            <div>
-                                <h5 class="mb-1">{{ $course->teacher->name }}</h5>
-                                @if($course->teacher->work_experience)
-                                    <small class="text-muted">
-                                        Опыт работы: {{ $course->teacher->work_experience }} лет
-                                    </small>
-                                @endif
-                                @if($course->teacher->bio)
-                                    <p class="mb-0 mt-2">{{ $course->teacher->bio }}</p>
-                                @endif
-                            </div>
-                        </div>
-                    @else
-                        <span class="text-muted">Не назначен</span>
-                    @endif
-                </li>
-                <li class="list-group-item">
-                    <strong>Животные:</strong> 
-                    {{ $course->animals }}
-                </li>
-                <li class="list-group-item">
-                    <strong>Цена:</strong> 
-                    {{ $course->price ? number_format($course->price, 2, '.', ' ') . ' руб.' : 'Бесплатно' }}
-                </li>
-            </ul>
-        </div>
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Записаться на курс</h5>
+                        </li>
+                        <li>
+                            <strong>Животные:</strong> 
+                            {{ $course->animals }}
+                        </li>
+                        <li>
+                            <strong>Цена:</strong> 
+                            {{ $course->price ? number_format($course->price, 2, '.', ' ') . ' руб.' : 'Бесплатно' }}
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Форма записи на курс -->
+            <div class="col-md-4">
+                <div class="enrollment-card">
+                    <h5>Записаться на курс</h5>
                     <form id="enrollmentForm" action="{{ route('courses.enroll', $course) }}" method="POST">
                         @csrf
                         <input type="hidden" name="course_id" value="{{ $course->id }}">

@@ -8,7 +8,8 @@ use App\Models\User;
 use App\Models\Review;
 use App\Models\UserArticle;
 use App\Models\Course;
-use App\Models\Trip; // Предполагается, что у вас есть модель Trip
+use App\Models\Trip; 
+use App\Models\SurvivalTestResult;
 
 class ProfileController extends Controller
 {
@@ -37,15 +38,19 @@ class ProfileController extends Controller
                 ->wherePivot('status', 'rejected')
                 ->get();
             
-            $data += [
-                'reviews' => Review::where('author_name', $user->name)->get(),
-                'articles' => UserArticle::where('user_id', $user->id)->get(),
-                'completedCourses' => $completedCourses,
-                'coursesInProgress' => $user->courses()
-                    ->wherePivot('status', 'in_progress')
-                    ->get(),
-                'rejectedCourses' => $rejectedCourses // Добавляем отклоненные курсы в данные
-            ];
+                $data += [
+                    'reviews' => Review::where('author_name', $user->name)->get(),
+                    'articles' => UserArticle::where('user_id', $user->id)->get(),
+                    'completedCourses' => $completedCourses,
+                    'coursesInProgress' => $user->courses()
+                        ->wherePivot('status', 'in_progress')
+                        ->get(),
+                    'rejectedCourses' => $rejectedCourses,
+                    'survivalTestResults' => SurvivalTestResult::where('user_id', $user->id)
+                        ->orderBy('created_at', 'desc')
+                        ->limit(3)
+                        ->get()
+                ];
             
             // Обновление уровня
             $completedCoursesCount = $completedCourses->count();
@@ -71,9 +76,8 @@ class ProfileController extends Controller
     
     protected function determineLevel(int $count): string
     {
-        if ($count >= 10) return 'Эксперт';
-        if ($count >= 5) return 'Продвинутый';  // 5-9 курсов
-        if ($count >= 3) return 'Средний';       // 3-4 курса
+        if ($count >= 8) return 'Продвинутый';  // 5-9 курсов
+        if ($count >= 5) return 'Средний';       // 3-4 курса
         return 'Начинающий';                     // 0-2 курса
     }
 

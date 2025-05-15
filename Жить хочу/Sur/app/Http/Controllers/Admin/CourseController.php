@@ -29,6 +29,7 @@ class CourseController extends Controller
     {
         return view('admin.courses.show', compact('course'));
     }
+    
     public function store(Request $request)
     {
         $request->validate([

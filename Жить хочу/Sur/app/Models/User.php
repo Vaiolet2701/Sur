@@ -41,6 +41,11 @@ public function canCreateTrips(): bool
 }
 
 
+public function canCreateArticles(): bool
+{
+    return in_array($this->laravel_level, ['Средний', 'Продвинутый', 'Эксперт']);
+}
+
 public function taughtCourses()
 {
     return $this->hasMany(Course::class, 'teacher_id');
@@ -54,31 +59,19 @@ public function pendingInvitations()
 {
     return $this->invitations()->where('status', 'pending');
 }
-// В app/Models/User.php
+
 public function canHaveProfileFields()
 {
     return in_array($this->role, ['teacher']);
-    // Или ваша собственная логика
+ 
 }
-    public function courses()
-    {
-        return $this->belongsToMany(Course::class)
-            ->withPivot([
-                'status',
-                'progress',
-                'phone',
-                'age',
-                'attended_previous_courses',
-                'message',
-                'rejection_reason',
-                'completed_at'
-            ])
-            ->withTimestamps();
-    }
-    public function articles()
+public function courses()
 {
-    return $this->hasMany(UserArticle::class);
+    return $this->belongsToMany(Course::class, 'course_user')
+                ->withPivot(['status', 'phone', 'age', 'attended_previous_courses', 'message'])
+                ->withTimestamps();
 }
+
     public function pendingCourses()
     {
         return $this->courses()->wherePivot('status', 'pending');
@@ -112,5 +105,29 @@ public function canHaveProfileFields()
     {
         return $this->belongsToMany(Trip::class, 'trip_participants')
                     ->withPivot(['name', 'age', 'phone', 'notes']);
+    }
+    public function bans()
+{
+    return $this->hasMany(\App\Models\Ban::class);
+}
+    public function isBanned()
+    {
+        return $this->bans()
+            ->where(function($query) {
+                $query->where('permanent', true)
+                    ->orWhere('expires_at', '>', now());
+            })
+            ->exists();
+    }
+    
+    public function activeBan()
+    {
+        return $this->bans()
+            ->where(function($query) {
+                $query->where('permanent', true)
+                    ->orWhere('expires_at', '>', now());
+            })
+            ->latest()
+            ->first();
     }
 }

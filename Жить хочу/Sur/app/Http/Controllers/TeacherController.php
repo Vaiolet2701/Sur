@@ -8,46 +8,40 @@ use Illuminate\Http\Request;
 
 class TeacherController extends Controller
 {
-    public function index()
+    public function myCourses(Request $request)
     {
-        $teachers = User::where('is_teacher', true)->get();
-        return view('teachers.index', compact('teachers'));
-    }
-
-    public function show($id)
-    {
-        $teacher = User::with('taughtCourses')->findOrFail($id);
-        return view('teachers.show', compact('teacher'));
-    }
-
-    public function create()
-    {
-        return view('teachers.create');
-    }
-
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'name' => 'required',
-            'full_name' => 'required',
-            'email' => 'required|email|unique:users',
-            'password' => 'required|min:8',
-            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'age' => 'required|integer|min:18',
-            'work_experience' => 'required|integer',
-            'bio' => 'nullable|string'
-        ]);
-
-        if ($request->hasFile('avatar')) {
-            $path = $request->file('avatar')->store('avatars', 'public');
-            $validated['avatar'] = $path;
+        $teacher = $request->user();
+        
+        if ($teacher->role !== 'teacher') {
+            abort(403, 'Только для преподавателей');
         }
-
-        $validated['is_teacher'] = true;
-        $validated['password'] = bcrypt($validated['password']);
-
-        User::create($validated);
-
-        return redirect()->route('teachers.index')->with('success', 'Преподаватель добавлен');
+    
+        $courses = Course::with(['users' => function($query) {
+            $query->where('course_user.status', '!=', 'rejected');
+        }])
+        ->where('teacher_id', $teacher->id)
+        ->get();
+    
+        return view('teachers.my-courses', [
+            'courses' => $courses,
+            'teacher' => $teacher
+        ]);
+    }
+    
+    public function leaveCourse(Request $request, $courseId)
+    {
+        $teacher = $request->user();
+        $course = Course::findOrFail($courseId);
+    
+        // Проверяем, что текущий пользователь действительно учитель этого курса
+        if ($course->teacher_id !== $teacher->id) {
+            abort(403, 'Unauthorized action.');
+        }
+    
+        // Убираем учителя из курса
+        $course->teacher_id = null;
+        $course->save();
+    
+        return redirect()->route('teachers.my-courses')->with('success', 'Вы больше не преподаете этот курс');
     }
 }

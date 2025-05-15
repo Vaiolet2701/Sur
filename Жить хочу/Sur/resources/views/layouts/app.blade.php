@@ -15,12 +15,14 @@
     <link href="{{ asset('css/cources.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="{{ asset('css/form-styles.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css" />
+
     <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 <body>
     <!-- Главная навигация -->
     <nav class="nature__nav">
-        <div class="nature__container">
             <div class="nav-links">
                 <a href="{{ url('/') }}" class="nav-link">
                     <i class="fas fa-home"></i>
@@ -34,6 +36,22 @@
                     <i class="fas fa-about"></i>
                     О нас
                 </a>
+                <a  href="{{ route('content.index') }}" class="nav-link">
+                    <i class="fas fa-content"></i>
+                    Материал
+                </a>
+                <a  href="{{ route('trips.index') }}" class="nav-link">
+                    <i class="fas fa-trips"></i>
+                    Походы
+                </a>
+                <a href="{{ route('equipments.index') }}"class="nav-link">
+                    <i class="fas fa-equ"></i>
+                    Список снаряжения</a>
+
+                    <a class="nav-link" href="{{ route('survival.test') }}">
+                        <i class="fas fa-test"></i>
+                        Тест на выживание</a>
+                
                 @auth
                 @if(Auth::user()->role === 'admin')
                     <div class="dropdown">
@@ -50,27 +68,27 @@
                             <li><a class="dropdown-item" href="{{ route('admin.user-articles.index') }}">Статьи пользователей</a></li>
                             <li><a class="dropdown-item" href="{{ route('admin.reviews.index') }}">Отзывы</a></li>
                             <li><a class="dropdown-item" href="{{ route('admin.teachers.index') }}">Преподаватели</a></li>
+                            <li><a class="dropdown-item" href="{{ route('admin.users.index') }}">Управление пользователями</a></li>
+                            <li><a class="dropdown-item" href="{{ route('admin.equipment.index') }}">Снаряжения</a></li>
+                            <li><a class="dropdown-item" href="{{ route('admin.rentals.index') }}">Аренды</a></li>
                         </ul>
                     </div>
                     @else
-                    <a href="{{ route('profile.show') }}" class="nav-link">
-                        <i class="fas fa-user"></i>
-                        Профиль
-                    </a>
+             
                 @endif
                 @if(auth()->user()->laravel_level === 'Продвинутый')
              
                     <a class="nav-link" href="{{ route('trips.create') }}">Создать поход</a>
                
             @endif
-                @if(auth()->user()->is_teacher)
-                    <a href="{{ route('teachers.courses.index') }}" class="nav-link">
-                        <i class="fas fa-book"></i>
-                        Мои курсы
-                    </a>
-                @endif
+            @if(auth()->check() && auth()->user()->role === 'teacher')
+            <a href="{{ route('teachers.my-courses') }}" class="nav-link">
+                <i class="fas fa-book"></i>
+                Мои курсы
+            </a>
+        @endif
             @endauth
-        </div>
+       
                 
 
             <!-- Правая часть навигации (авторизация) -->
@@ -103,7 +121,6 @@
                     </div>
                 @endguest
             </div>
-        </div>
     </nav>
 
     <!-- Контент для главной страницы -->
@@ -169,6 +186,7 @@
     <!-- Подключение JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
     @stack('scripts')
 </body>
 </html>

@@ -73,4 +73,5 @@ public static function checkAndCompleteExpiredCourses()
     {
         return $this->belongsTo(Promotion::class);
     }
+
 }

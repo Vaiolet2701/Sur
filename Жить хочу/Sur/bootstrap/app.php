@@ -9,6 +9,7 @@ use App\Http\Middleware\ManagerMiddleware;
 use App\Http\Middleware\ContentManagerMiddleware;
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\CheckAdvancedLevelMiddleware;
+use App\Http\Middleware\CheckBannedMiddleware;
 
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -25,6 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
            'content_manager' => ContentManagerMiddleware::class,
            'manager' => ManagerMiddleware::class,
            'advanced' => CheckAdvancedLevelMiddleware::class,
+           'banned' => CheckBannedMiddleware::class,
         ]);
     })
 

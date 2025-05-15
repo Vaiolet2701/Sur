@@ -20,7 +20,7 @@ class PromotionController extends Controller
         $categories = CourseCategory::all();
         $userArticles = UserArticle::all();
         $reviews = Review::all();
-        $courses = Course::inRandomOrder()->take(5)->get();
+        $courses = Course::inRandomOrder()->take(15)->get();
         $adminArticles = AdminArticle::inRandomOrder()->take(3)->get();
         $userArticles = UserArticle::inRandomOrder()->take(3)->get();
         $videos = Video::inRandomOrder()->take(1)->get(); // 1 видео
@@ -35,18 +35,16 @@ class PromotionController extends Controller
             'reviews'
         ));
     }
-    public function showEnrollForm(Promotion $promotion)
+    public function loadEnrollForm(Promotion $promotion)
     {
-        if (!$promotion->exists) {
-            abort(404, "Акция не найдена");
-        }
+        $availableCourses = Course::where('is_active', true)->get(); // или другая логика фильтрации
     
-        $availableCourses = Course::where('start_date', '>', now())
-            ->orderBy('start_date')
-            ->get();
-    
-        return view('promotions.enroll', compact('promotion', 'availableCourses'));
+        return view('promotions.enroll', [
+            'promotion' => $promotion,
+            'availableCourses' => $availableCourses
+        ]);
     }
+    
   
 
 public function applyDiscount(Request $request, $promotionId)

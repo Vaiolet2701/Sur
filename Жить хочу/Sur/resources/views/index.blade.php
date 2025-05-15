@@ -1,185 +1,116 @@
 @extends('layouts.app')
-
 @section('content')
 <div class="container">
-    <!-- Секция "Почему наши курсы" -->
-    <section class="why-us">
-        <h2 class="why-us__title">Почему наши курсы лучший выбор</h2>
-        <div class="why-us__cards">
-            <div class="why-us__card">
-                <h3 class="why-us__card-title">Реальные условия</h3>
-                <p class="why-us__card-text">Тренировки в 6 климатических зонах</p>
-                <div class="why-us__card-info">120+ локаций</div>
+<!-- Секция "Почему наши курсы + Горящие предложения" -->
+<section class="features-promotions section">
+    <div class="container">
+        <div class="features-promotions__wrapper">
+            <!-- Левая часть: Почему наши курсы -->
+            <div class="features-left">
+                <h2 class="section-title">ПОЧЕМУ НАШИ КУРСЫ</h2>
+                <div class="features-cards">
+                    <div class="feature-card">
+                        <h3>ОПЫТНЫЕ ИНСТРУКТОРЫ</h3>
+                        <p>Проверенные с многолетним опытом</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>ПРАКТИЧЕСКИЕ НАВЫКИ</h3>
+                        <p>Учим тому, что действительно важно</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>БЕЗОПАСНОСТЬ</h3>
+                        <p>Сопровождение на каждом этапе</p>
+                    </div>
+                </div>
             </div>
-            <div class="why-us__card">
-                <h3 class="why-us__card-title">Безопасность</h3>
-                <p class="why-us__card-text">Каждый инструктор имеет:</p>
-                <div class="why-us__card-info">Медицинскую лицензию</div>
-                <div class="why-us__card-info">10+ лет опыта</div>
-            </div>
-            <div class="why-us__card">
-                <h3 class="why-us__card-title">Форматы обучения</h3>
-                <div class="why-us__card-info">3 дня - Экспресс-курс</div>
-                <div class="why-us__card-info">14 дней - Проф подготовка</div>
+
+            <!-- Правая часть: Скидка -->
+            <div class="features-right">
+                @if($promotions->isNotEmpty())
+                    @php $promo = $promotions->first(); @endphp
+                    <div class="promo-box" onclick="loadEnrollForm('{{ $promo->id }}', 'promotion')">
+                        <h3 class="discount-label">СКИДКА</h3>
+                        <div class="discount-value">{{ $promo->discount }}%</div>
+                        <p class="discount-note">Не пропусти до конца месяца</p>
+                    </div>
+                @endif
             </div>
         </div>
-    </section>
+    </div>
 
-    <section class="promotions">
-        <h2 class="promotions__title">Горящие предложения</h2>
-        <div class="promotions__cards">
-            @foreach($promotions as $promotion)
-                <div class="promotions__card">
-                    @if($promotion->image_path)
-                        <img src="{{ asset($promotion->image_path) }}" class="promotions__card-img" alt="{{ $promotion->title }}">
-                    @endif
-                    <div class="promotions__card-body">
-                        <h5 class="promotions__card-title">{{ $promotion->title }}</h5>
-                        <p class="promotions__card-text">{{ $promotion->description }}</p>
-                        <div class="promotions__card-footer">
-                            <span class="promotions__card-discount">-{{ $promotion->discount }}%</span>
-                            <button class="promotions__card-btn" 
-                            data-promotion-id="{{ $promotion->id }}" 
-                            onclick="loadEnrollForm('{{ $promotion->id }}', 'promotion')">
-                        Записаться
-                    </button>
-                        </div>
+    <!-- Модальное окно -->
+<div class="modal fade" id="promotionModal" tabindex="-1" aria-labelledby="promotionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="promotionModalLabel">Запись по акции</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+        </div>
+        <div class="modal-body" id="promotionModalBody">
+          <!-- Здесь будет форма подгружена через AJAX -->
+          <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Загрузка...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+</section>
+
+<section class="courses section">
+    <h2 class="section-title">НАШИ КУРСЫ</h2>
+    <div class="swiper-container">
+        <div class="swiper-wrapper">
+            @foreach($courses as $course)
+                <div class="swiper-slide">
+                    <div class="card">
+                        <h3>{{ $course->title }}</h3>
+                        @if($course->image_path)
+                            <img src="{{ asset($course->image_path) }}" alt="{{ $course->title }}">
+                        @endif
+                        <p>С {{ $course->start_date }} по {{ $course->end_date }}</p>
+                        <p>Группа: {{ $course->min_people }}-{{ $course->max_people }}</p>
+                        <p>Преподаватель: {{ $course->teacher->name ?? '—' }}</p>
+                        <p>Животные: {{ $course->animals }}</p>
+                        <p>Цена: {{ $course->price ? number_format($course->price, 2, '.', ' ') . ' руб.' : 'Бесплатно' }}</p>
+                        @auth
+                            <button onclick="openEnrollModal({{ $course->id }})">Записаться</button>
+                        @else
+                            <a href="{{ route('login') }}">Войти для записи</a>
+                        @endauth
                     </div>
                 </div>
             @endforeach
         </div>
-    </section>
-    <div id="enrollModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal()">&times;</span>
-            <div id="modalContent"></div> <!-- Сюда будет загружена форма -->
-        </div>
-    </div>
-
-
-    <!-- Секция "Программы обучения" -->
-    <section class="programs">
-        <h2 class="programs__title">Программы обучения</h2>
-        <div class="programs__cards">
-            <div class="programs__card">
-                <h3 class="programs__card-title">Базовый курс</h3>
-                <p class="programs__card-text">Тренировки в различных условиях:</p>
-                <div class="programs__card-info">Горная местность</div>
-                <div class="programs__card-info">Лесная зона</div>
-                <div class="programs__card-info">Огневые техники</div>
-            </div>
-            <div class="programs__card">
-                <h3 class="programs__card-title">Экстремальный</h3>
-                <p class="programs__card-text">Выживание в экстремальных условиях:</p>
-                <div class="programs__card-info">Выживание в снегах</div>
-                <div class="programs__card-info">Пустынная адаптация</div>
-                <div class="programs__card-info">Водные переправы</div>
-            </div>
-            <div class="programs__card">
-                <h3 class="programs__card-title">Профессиональный</h3>
-                <p class="programs__card-text">Продвинутые навыки выживания:</p>
-                <div class="programs__card-info">Тактическая медицина</div>
-                <div class="programs__card-info">Психология выживания</div>
-                <div class="programs__card-info">Навигация Advanced</div>
-            </div>
-        </div>
-    </section>
-<!-- Секция "Наши программы" -->
-<section class="courses">
-    <h2 class="courses__title">Наши программы</h2>
-    <div class="courses__slider">
-        <div class="swiper-container swiper-container-1">
-            <div class="swiper-wrapper">
-                @foreach($courses as $course)
-                    <div class="swiper-slide">
-                        <div class="courses__card">
-                            <div class="courses__card-header">
-                                <h3 class="courses__card-title">{{ $course->title }}</h3>
-                            </div>
-                            @if($course->image_path)
-                                <img src="{{ asset($course->image_path) }}" 
-                                     class="courses__card-img" 
-                                     alt="{{ $course->title }}"
-                                     style="height: 200px; object-fit: cover;">
-                            @endif
-                            <div class="courses__card-body">
-                                <div class="courses__card-meta">
-                                    <span class="courses__card-date">
-                                        🗓️ {{ \Carbon\Carbon::parse($course->start_date)->format('d.m') }}-{{ \Carbon\Carbon::parse($course->end_date)->format('d.m') }}
-                                    </span>
-                                    <span class="courses__card-people">
-                                        👥 {{ $course->min_people }}-{{ $course->max_people }} чел
-                                    </span>
-                                </div>
-                               
-                                <div class="courses__card-details">
-                                    <div class="courses__card-detail">
-                                        <span>🐾 Животные:</span>
-                                        <strong>{{ $course->animals }}</strong>
-                                    </div>
-                                    <hr class="courses__card-divider">
-                                    <div class="courses__card-detail">
-                                        <span>⚡ Сложность:</span>
-                                        <div class="courses__card-stars">
-                                            @for($i = 0; $i < 5; $i++)
-                                                <i class="fas fa-star{{ $i < $course->difficulty_level ? ' text-warning' : ' text-secondary' }}"></i>
-                                            @endfor
-                                        </div>
-                                    </div>
-                                    <div class="courses__card-detail">
-                                          <span>💰 Цена:</span>
-                                      <strong>{{ $course->price ? number_format($course->price, 2, '.', ' ') . ' руб.' : 'Бесплатно' }}</strong>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="courses__card-footer">
-                                @auth
-                                    <button class="courses__card-btn" 
-                                            data-course-id="{{ $course->id }}"
-                                            onclick="openEnrollModal('{{ $course->id }}')">
-                                        Записаться
-                                    </button>
-                                @else
-                                    <a href="{{ route('login') }}" class="courses__card-btn">
-                                        Войти для записи
-                                    </a>
-                                @endauth
-                            </div>
-                        </div>
-                    </div>
-                @endforeach
-            </div>
-        </div>
+        <div class="swiper-button-next"></div>
+        <div class="swiper-button-prev"></div>
+        <div class="swiper-pagination"></div>
     </div>
 </section>
 
-<!-- Модальное окно -->
-<div id="enrollModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
+    <!-- Модальное окно -->
+    <div id="enrollModal" class="modal">
+        <div class="modal-content">
             <span class="modal-close" onclick="closeModal()">&times;</span>
-            <h2>Запись на курс</h2>
-        </div>
-        <div class="modal-body" id="enrollModalBody">
-            Загрузка формы...
+            <div id="modalContent"></div>
         </div>
     </div>
-</div>
-
-
-
-
 
 <!-- Секция "Статьи от админа" (объединенная) -->
 <section class="admin-articles">
-    <h2 class="admin-articles__title">Статьи</h2>
+    <div class="container">
+    <h2 class="section-title">СТАТЬИ</h2>
 
     <!-- Кнопки создания статей -->
     <div class="admin-articles__actions">
         @auth
-            <!-- Кнопка для обычных пользователей -->
-            <a href="{{ route('articles.create') }}" class="btn btn-primary">Написать статью</a>
-            
+        @if(in_array(auth()->user()->laravel_level, ['Средний', 'Продвинутый']))
+            <a href="{{ route('articles.create') }}" class="btn btn-primary">Создать статью</a>
+        @endif
+
             <!-- Кнопка для администратора -->
             @if(Auth::user()->role === 'admin')
                 <a href="{{ route('admin.articles.create') }}" class="btn btn-primary">Создать статью (админ)</a>
@@ -212,7 +143,7 @@
             @endforelse
             
             <!-- Одобренные статьи пользователей -->
-            @forelse($userArticles as $article)
+            @forelse($userArticles->where('is_approved', true) as $article)
                 <div class="swiper-slide">
                     <div class="admin-articles__item">
                         <div class="article-author">Пользователь: {{ $article->user->name }}</div>
@@ -228,196 +159,364 @@
                     <div class="admin-articles__item">
                         <p>Нет одобренных статей от пользователей</p>
                     </div>
+                    
                 </div>
+                
             @endforelse
+            <div class="swiper-pagination-2"></div>
         </div>
         <!-- Пагинация -->
-        <div class="swiper-pagination-2"></div>
+    </div>
     </div>
 </section>
 
-    <!-- Секция "Видео" -->
-    <section class="videos">
-        <h2 class="videos__title">Видео</h2>
-        <div class="videos__list">
-            @foreach($videos as $video)
-                <div class="videos__item">
-                    <h3 class="videos__item-title">{{ $video->title }}</h3>
-                    <iframe src="{{ $video->url }}" class="videos__item-iframe" frameborder="0"></iframe>
-                    <p class="videos__item-description">{{ $video->description }}</p>
-                    <p class="videos__item-duration">Длительность: {{ $video->duration }} минут</p>
-                </div>
-            @endforeach
-        </div>
-    </section>
-
- <!-- Секция "Частые вопросы" -->
- <section class="faq">
-    <h2 class="faq__title">Частые вопросы</h2>
+<!-- Секция "Частые вопросы" -->
+<section class="faq">
+    <h2 class="section-title">ЧАСТЫЕ ВОПРОСЫ</h2>
     <div class="faq__accordion">
+        <!-- Основные вопросы -->
         <div class="faq__item">
             <h3 class="faq__item-title">
                 <button class="faq__item-btn" type="button">
-                    Что взять с собой?
+                    Что взять с собой на курс?
                 </button>
             </h3>
             <div class="faq__item-content">
-                Только личные вещи. Все снаряжение предоставляем!
+                <p>Основное снаряжение мы предоставляем. олный список вы можете посмотреть на карточках курсов. Рекомендуем взять:</p>
+                <ul>
+                    <li>Удобную непромокаемую одежду и обувь</li>
+                    <li>Личные лекарства (если нужны)</li>
+                    <li>Гигиенические принадлежности</li>
+                    <li>Блокнот и ручку</li>
+                    <li>Фонарик</li>
+                </ul>
             </div>
         </div>
+
         <div class="faq__item">
             <h3 class="faq__item-title">
                 <button class="faq__item-btn" type="button">
-                    Есть возрастные ограничения?
+                    Есть ли возрастные ограничения?
                 </button>
             </h3>
             <div class="faq__item-content">
-                Участие с 14 лет в сопровождении взрослых
+                <p>Минимальный возраст - 14 лет (в сопровождении взрослых). Для подростков 14-16 лет есть специальные семейные программы.</p>
+                <p>Верхнего возрастного ограничения нет, но требуется хорошая физическая форма.</p>
+            </div>
+        </div>
+
+        <!-- Безопасность -->
+        <div class="faq__item">
+            <h3 class="faq__item-title">
+                <button class="faq__item-btn" type="button">
+                    Насколько это безопасно?
+                </button>
+            </h3>
+            <div class="faq__item-content">
+                <p>Все занятия проводят опытные инструкторы с медицинской подготовкой. Мы:</p>
+                <ul>
+                    <li>Используем только проверенное снаряжение</li>
+                    <li>Имеем аптечки и средства связи</li>
+                    <li>Работаем на подготовленных площадках</li>
+                    <li>Соблюдаем все меры предосторожности</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="faq__item">
+            <h3 class="faq__item-title">
+                <button class="faq__item-btn" type="button">
+                    Что делать, если у меня аллергия/особые состояния?
+                </button>
+            </h3>
+            <div class="faq__item-content">
+                <p>Обязательно сообщите нам при бронировании о:</p>
+                <ul>
+                    <li>Аллергиях (особенно на укусы насекомых)</li>
+                    <li>Хронических заболеваниях</li>
+                    <li>Особых диетических требованиях</li>
+                </ul>
+                <p>Мы адаптируем программу под ваши потребности.</p>
+            </div>
+        </div>
+
+        <!-- Подготовка -->
+        <div class="faq__item">
+            <h3 class="faq__item-title">
+                <button class="faq__item-btn" type="button">
+                    Нужна ли специальная подготовка?
+                </button>
+            </h3>
+            <div class="faq__item-content">
+                <p>Для курсов подготовка не требуется.</p>
+            </div>
+        </div>
+
+        <!-- Питание -->
+        <div class="faq__item">
+            <h3 class="faq__item-title">
+                <button class="faq__item-btn" type="button">
+                    Как организовано питание?
+                </button>
+            </h3>
+            <div class="faq__item-content">
+                <p>На всех курсах:</p>
+                <ul>
+                    <li>3-разовое сбалансированное питание</li>
+                    <li>Возможность вегетарианского/веганского меню</li>
+                    <li>Обучение приготовлению пищи в полевых условиях</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Животные -->
+        <div class="faq__item">
+            <h3 class="faq__item-title">
+                <button class="faq__item-btn" type="button">
+                    Как защищаемся от диких животных?
+                </button>
+            </h3>
+            <div class="faq__item-content">
+                <p>Наши меры:</p>
+                <ul>
+                    <li>Работаем в местах с минимальной опасностью</li>
+                    <li>Используем отпугиватели (фальшфейеры, спреи)</li>
+                    <li>Обучаем правильному поведению при встрече</li>
+                    <li>Храним еду в специальных контейнерах</li>
+                </ul>
+                <p>За 10 лет - ни одной опасной встречи!</p>
+            </div>
+        </div>
+
+        <!-- Медицина -->
+        <div class="faq__item">
+            <h3 class="faq__item-title">
+                <button class="faq__item-btn" type="button">
+                    Есть ли медицинская помощь?
+                </button>
+            </h3>
+            <div class="faq__item-content">
+                <p>Да, на всех курсах:</p>
+                <ul>
+                    <li>Инструкторы с необходимой подготовкой</li>
+                    <li>Аптечки с необходимыми медикаментами</li>
+                    <li>Спутниковая связь для экстренных случаев</li>
+                    <li>Маршруты проложены недалеко от дорог</li>
+                </ul>
+                <p>Для хронических заболеваний - берите свои лекарства.</p>
+            </div>
+        </div>
+
+        <!-- Сертификаты -->
+        <div class="faq__item">
+            <h3 class="faq__item-title">
+                <button class="faq__item-btn" type="button">
+                    Выдаете ли вы сертификаты?
+                </button>
+            </h3>
+            <div class="faq__item-content">
+                <p>Да, по окончании курса вы получите:</p>
+                <ul>
+                    <li>Именной сертификат о прохождении</li>
+                    <li>Список освоенных навыков</li>
+                    <li>Рекомендации по дальнейшему обучению</li>
+                </ul>
+                <p>Для профессиональных гидов - сертификат международного образца.</p>
+            </div>
+        </div>
+
+        <!-- Трансфер -->
+        <div class="faq__item">
+            <h3 class="faq__item-title">
+                <button class="faq__item-btn" type="button">
+                    Как добраться до места?
+                </button>
+            </h3>
+            <div class="faq__item-content">
+                <p>Варианты:</p>
+                <ul>
+                    <li><strong>Самостоятельно:</strong> координаты и схема проезда после оплаты</li>
+                    <li><strong>Групповой трансфер:</strong> от ближайшего города (уточняйте для конкретного курса)</li>
+                    <li><strong>Индивидуальный трансфер:</strong> за дополнительную плату</li>
+                </ul>
             </div>
         </div>
     </div>
 </section>
 
- <!-- Секция "Карта с курсами" -->
-<section class="map py-5">
-    <div class="container">
-        <h2 class="text-center mb-4">Наши курсы на карте</h2>
-        <div id="map" style="width: 100%; height: 500px;"></div>
-    </div>
-</section>
+  <!-- Секция "Отзывы" с формой и слайдером -->
+<section class="reviews-section">
+    <h2 class="section-title">ОТЗЫВЫ</h2>
 
-    <!-- Секция "Оставить отзыв" -->
-    <section class="reviews-form">
-        <h2 class="reviews-form__title">Оставить отзыв</h2>
-        <form action="{{ route('reviews.store') }}" method="POST" class="reviews-form__form">
-            @csrf
-            <div class="form-group">
-                <label for="author_name">Ваше имя:</label>
-                <input type="text" name="author_name" id="author_name" class="form-control" required>
-            </div>
-            <div class="form-group">
-                <label for="content">Текст отзыва:</label>
-                <textarea name="content" id="content" class="form-control" rows="5" required></textarea>
-            </div>
-            <div class="form-group">
-                <label for="rating">Рейтинг (от 1 до 5):</label>
-                <input type="number" name="rating" id="rating" class="form-control" min="1" max="5" required>
-            </div>
-            <button type="submit" class="btn btn-primary">Отправить отзыв</button>
-        </form>
-    </section>
-
-    <!-- Секция "Отзывы" -->
-    <section class="reviews">
-        <h2 class="reviews__title">Отзывы</h2>
-        <div class="reviews__slider">
-            <div class="swiper-container swiper-container-1">
-                <div class="swiper-wrapper">
-                    @foreach($reviews as $review)
-                        <div class="swiper-slide">
-                            <div class="reviews__card">
-                                <div class="reviews__item">
-                                    <h3 class="reviews__item-author">{{ $review->author_name }}</h3>
-                                    <p class="reviews__item-content">{{ $review->content }}</p>
-                                    <p class="reviews__item-rating">Рейтинг: {{ $review->rating }}/5</p>
-                                </div>
+    <!-- Слайдер отзывов -->
+    <div class="reviews__slider">
+        <div class="swiper-container swiper-container-reviews">
+            <div class="swiper-wrapper">
+                @foreach($reviews as $review)
+                    <div class="swiper-slide">
+                        <div class="reviews__card">
+                            <div class="reviews__item">
+                                <h3 class="reviews__item-author">{{ $review->author_name }}</h3>
+                                <p class="reviews__item-content">{{ $review->content }}</p>
+                                <p class="reviews__item-rating">Рейтинг: {{ $review->rating }}/5</p>
                             </div>
                         </div>
-                    @endforeach
-                </div>
+                    </div>
+                @endforeach
             </div>
+            <!-- Навигация -->
+            <div class="swiper-button-prev"></div>
+            <div class="swiper-button-next"></div>
         </div>
-    </section>
+    </div>
+
+    <!-- Форма отзыва -->
+    <form action="{{ route('reviews.store') }}" method="POST" class="reviews-form__form">
+        @csrf
+        <h3 class="reviews-form__title">ОСТАВИТЬ ОТЗЫВ</h3>
+        <div class="form-group">
+            <label for="author_name">Ваше имя:</label>
+            <input type="text" name="author_name" id="author_name" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label for="content">Текст отзыва:</label>
+            <textarea name="content" id="content" class="form-control" rows="5" required></textarea>
+        </div>
+        <div class="form-group">
+            <label for="rating">Рейтинг (от 1 до 5):</label>
+            <input type="number" name="rating" id="rating" class="form-control" min="1" max="5" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Отправить отзыв</button>
+    </form>
+</section>
+
     
 </div>
 @endsection
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    // Первый слайдер
-    const swiper1 = new Swiper('.swiper-container-1', {
-        loop: true, // Бесконечный слайдер
-        slidesPerView: 2.5, // Видимость слайдов
-        centeredSlides: true, // Центрирование активного слайда
-        spaceBetween: 20, // Отступ между слайдами
-        on: {
-            click: function (swiper, event) {
-                // Переход к слайду по клику
-                const clickedSlide = event.target.closest('.swiper-slide');
-                if (clickedSlide) {
-                    const slideIndex = Array.from(swiper.slides).indexOf(clickedSlide);
-                    swiper.slideTo(slideIndex); // Переход к слайду
-                }
-            },
-        },
-    });
-
-    // Второй слайдер
-    const swiper2 = new Swiper('.swiper-container-2', {
-        loop: true, // Бесконечный слайдер
-        slidesPerView: 1, // Видимость одного слайда
-        spaceBetween: 20, // Отступ между слайдами
-        navigation: false,
-        pagination: {
-            el: '.swiper-pagination-2', // Пагинация
-            clickable: true, // Возможность перехода по клику на пагинацию
-        },
-    });
-});
-// Третий слайдер (для статей от пользователей)
-const swiper3 = new Swiper('.swiper-container-3', {
-    loop: true, // Бесконечный слайдер
-    slidesPerView: 1, // Видимость одного слайда
-    spaceBetween: 20, // Отступ между слайдами
-    navigation: false,
-    pagination: {
-        el: '.swiper-pagination-3', // Пагинация
-        clickable: true, // Возможность перехода по клику на пагинацию
-    },
-});
-
-// Функция для загрузки формы через AJAX
-function loadEnrollForm(id, type) {
-    const url = `/courses/${id}/enroll-form`;
-    const modalContent = document.getElementById('modalContent');
-    
-    // Показываем загрузку
-    modalContent.innerHTML = '<div class="text-center p-4">Загрузка формы...</div>';
-    document.getElementById('enrollModal').style.display = 'block';
-    
-    fetch(url, {
-        headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-            'X-Requested-With': 'XMLHttpRequest',
-            'Accept': 'text/html'
-        }
-    })
-    .then(response => {
-        if (!response.ok) {
-            if (response.status === 401) {
-                window.location.href = '/login';
-                throw new Error('Требуется авторизация');
-            }
-            throw new Error(`Ошибка сервера: ${response.status}`);
-        }
-        return response.text();
-    })
-    .then(data => {
-        modalContent.innerHTML = data;
-        initEnrollForm();
-    })
-    .catch(error => {
-        console.error('Ошибка:', error);
-        modalContent.innerHTML = `
-            <div class="alert alert-danger">
-                <h4>Ошибка!</h4>
-                <p>${error.message}</p>
-                <button onclick="closeModal()" class="btn btn-secondary">Закрыть</button>
+    <script>
+function loadEnrollForm(promotionId, type) {
+    const modalBody = document.getElementById('promotionModalBody');
+    modalBody.innerHTML = `
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Загрузка...</span>
             </div>
-        `;
-    });
+        </div>
+    `;
+
+    // Показать модальное окно
+    const modal = new bootstrap.Modal(document.getElementById('promotionModal'));
+    modal.show();
+
+    // Загружаем форму через AJAX
+    fetch(`/promotions/enroll-form/${promotionId}`)
+        .then(response => response.text())
+        .then(html => {
+            modalBody.innerHTML = html;
+        })
+        .catch(error => {
+            modalBody.innerHTML = `<div class="alert alert-danger">Ошибка загрузки формы</div>`;
+            console.error('Ошибка:', error);
+        });
 }
 </script>
+
 <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const swiper = new Swiper('.swiper-container', {
+            loop: true,
+            slidesPerView: 3,
+            centeredSlides: true,
+            spaceBetween: 20,
+            navigation: {
+                nextEl: '.swiper-button-next',
+                prevEl: '.swiper-button-prev',
+            },
+            pagination: {
+                el: '.swiper-pagination',
+                clickable: true,
+            },
+            breakpoints: {
+                320: {
+                    slidesPerView: 1,
+                    spaceBetween: 10
+                },
+                768: {
+                    slidesPerView: 2,
+                    spaceBetween: 20
+                },
+                1024: {
+                    slidesPerView: 3,
+                    spaceBetween: 30
+                }
+            }
+        });
+    });
+    </script>
+   <script>
+function openEnrollModal(courseId) {
+    fetch(`/courses/${courseId}/enroll`)
+        .then(response => {
+            if (!response.ok) throw new Error('Не удалось загрузить форму');
+            return response.text();
+        })
+        .then(html => {
+            document.getElementById('modalContent').innerHTML = html;
+            document.getElementById('enrollModal').style.display = 'block';
+        })
+        .catch(error => {
+            alert('Ошибка при загрузке формы.');
+            console.error(error);
+        });
+}
+
+// ВНЕ функции openEnrollModal
+function closeModal() {
+    document.getElementById('enrollModal').style.display = 'none';
+}
+
+// Закрытие по клику вне окна
+window.onclick = function(event) {
+    const modal = document.getElementById('enrollModal');
+    if (event.target === modal) {
+        modal.style.display = 'none';
+    }
+};
+
+
+</script>
+ 
+<script>
+
+const swiper2 = new Swiper('.swiper-container-2', {
+    loop: true,
+    slidesPerView: 1,
+    spaceBetween: 20,
+    navigation: false,
+    allowTouchMove: false, // ⛔ отключает свайп
+    pagination: {
+        el: '.swiper-pagination-2',
+        clickable: true, // ✅ клики по кружкам
+    },
+});
+</script>
+<script>
+const reviewSwiper = new Swiper('.swiper-container-reviews', {
+  slidesPerView: 1,
+  loop: true,
+  navigation: {
+    nextEl: '.swiper-button-next',
+    prevEl: '.swiper-button-prev',
+  },
+  spaceBetween: 30, // ← расстояние между карточками (в пикселях)
+  centeredSlides: true,
+});
+
+
+
+</script>
+<script>
+    
     // Создаем функцию-обёртку
     function addEventListener2(element, event, handler) {
         element.addEventListener(event, handler);

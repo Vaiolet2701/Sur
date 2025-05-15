@@ -11,6 +11,9 @@ use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\TeacherController;
+use App\Http\Controllers\ContentController;
+use App\Http\Controllers\EquipmentController;
+use App\Http\Controllers\EquipmentRentalController;
 // Admin controllers
 use App\Http\Controllers\Admin\ArticleController as AdminArticleController;
 use App\Http\Controllers\Admin\ReviewController as AdminReviewController;
@@ -20,9 +23,16 @@ use App\Http\Controllers\Admin\CourseController as AdminCourseController;
 use App\Http\Controllers\Admin\CourseCategoryController as AdminCourseCategoryController;
 use App\Http\Controllers\Admin\EnrollmentController as AdminEnrollmentController;
 use App\Http\Controllers\Admin\TeacherController as AdminTeacherController;
+use App\Http\Controllers\Admin\BanController as AdminBanController;
+use App\Http\Controllers\Admin\UserController as AdminUserController;
+use App\Http\Controllers\Admin\EquipmentController as AdminEquipmentController;
+
+use App\Http\Controllers\Admin\EquipmentRentalController as AdminEquipmentRentalController;
+
 // Teacher controllers
 use App\Http\Controllers\Teacher\CourseSelectionController;
 use App\Http\Controllers\TripController;
+use App\Http\Controllers\SurvivalTestController;
 
 // Главная страница (доступна всем)
 Route::get('/', [PromotionController::class, 'index'])->name('home');
@@ -58,8 +68,12 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
 
     // Управление пользовательскими статьями
     Route::get('user-articles', [AdminUserArticleController::class, 'index'])->name('admin.user-articles.index');
-    Route::put('user-articles/{id}/approve', [AdminUserArticleController::class, 'approve'])->name('admin.user-articles.approve');
-    Route::delete('user-articles/{id}', [AdminUserArticleController::class, 'destroy'])->name('admin.user-articles.destroy');
+    Route::put('admin/user-articles/{article}/approve', [AdminUserArticleController::class, 'approve'])
+    ->name('admin.user-articles.approve');
+
+// Для удаления статьи (используем DELETE)
+Route::delete('admin/user-articles/{article}', [AdminUserArticleController::class, 'destroy'])
+    ->name('admin.user-articles.destroy');
 
     // Управление отзывами
     Route::get('reviews', [AdminReviewController::class, 'index'])->name('admin.reviews.index');
@@ -86,25 +100,40 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
         'update' => 'admin.courses.update',
         'destroy' => 'admin.courses.destroy',
     ]);
+    Route::get('/users', [AdminUserController::class, 'index'])->name('admin.users.index');
+    Route::resource('bans', AdminBanController::class)
+    ->except(['edit', 'update'])
+    ->names('admin.bans');
+    Route::delete('/bans/{ban}', [AdminBanController::class, 'destroy'])->name('admin.bans.destroy');
+    Route::prefix('admin')->group(function() {
+        // Маршрут для формы создания бана
+        Route::get('/users/{user}/ban/create', [AdminBanController::class, 'create'])
+            ->name('admin.bans.create');
+        
+        // Маршрут для сохранения бана
+        Route::post('/users/{user}/ban', [AdminBanController::class, 'store'])
+            ->name('admin.bans.store');
+    });
+    Route::get('/admin/equipment', [adminEquipmentController::class, 'index'])->name('admin.equipment.index');
+    Route::get('/admin/equipment/create', [AdminEquipmentController::class, 'create'])->name('admin.equipment.create');
+    Route::post('/admin/equipment', [AdminEquipmentController::class, 'store'])->name('admin.equipment.store');
+
+    Route::get('/admin/rentals', [AdminEquipmentRentalController::class, 'index'])->name('admin.rentals.index');
+    Route::post('/admin/rentals/{id}/approve', [AdminEquipmentRentalController::class, 'approve'])->name('admin.rentals.approve');
 
     // Управление категориями курсов
     Route::get('/course-categories/create', [AdminCourseCategoryController::class, 'create'])->name('admin.course-categories.create');
     Route::post('/course-categories', [AdminCourseCategoryController::class, 'store'])->name('admin.course-categories.store');
 });
 
-// ==================== МАРШРУТЫ ДЛЯ ПРЕПОДАВАТЕЛЕЙ ====================
-Route::prefix('teachers')->name('teachers.')->middleware('auth')->group(function () {
-    // Основные маршруты преподавателей
-    Route::get('/', [TeacherController::class, 'index'])->name('index');
-    Route::get('/create', [TeacherController::class, 'create'])->name('create');
-    Route::post('/', [TeacherController::class, 'store'])->name('store');
-    Route::get('/{teacher}', [TeacherController::class, 'show'])->name('show');
 
-  
+// ==================== МАРШРУТЫ ДЛЯ ПРЕПОДАВАТЕЛЕЙ ====================
+Route::prefix('teachers')->name('teachers.')->middleware(['auth', 'teacher'])->group(function () {
+    Route::get('/my-courses', [TeacherController::class, 'myCourses'])->name('my-courses');
+    Route::delete('/courses/{course}/leave', [TeacherController::class, 'leaveCourse'])->name('leave-course');
 });
 
-Route::middleware(['auth', 'teacher'])->prefix('teacher')->group(function() {
- });
+
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->group(function() {
     Route::post('/courses/invite-teacher', [CourseController::class, 'inviteTeacher'])->name('admin.courses.invite-teacher');
@@ -124,7 +153,14 @@ Route::post('/courses/{course}/enroll', [CourseController::class, 'enroll'])->na
     // Статьи пользователя
     Route::get('/articles/create', [UserArticleController::class, 'create'])->name('articles.create');
     Route::post('/articles', [UserArticleController::class, 'store'])->name('articles.store');
-    
+    // Список снаряжения
+Route::get('/equipment', [EquipmentController::class, 'index'])->name('equipment.index');
+
+// Страница аренды
+Route::get('/equipment/{id}/rent', [EquipmentRentalController::class, 'create'])->name('equipment.rent');
+Route::post('/equipment/{id}/rent', [EquipmentRentalController::class, 'store'])->name('equipment.rent.store');
+Route::get('/equipments', [EquipmentController::class, 'index'])->name('equipments.index');
+
 });
 
 // Публичные маршруты (доступны всем)
@@ -133,17 +169,10 @@ Route::post('/reviews', [ReviewController::class, 'store'])->name('reviews.store
 
 // Курсы
 Route::resource('courses', CourseController::class)->only(['index', 'show']);
-Route::get('/courses/{id}', [CourseController::class, 'show'])->name('courses.show');
-Route::get('/courses/{course}/enroll-form', [CourseController::class, 'showEnrollForm'])
-     ->name('courses.enroll.form')
-     ->middleware('auth');
-Route::post('/courses/{course}/enroll', [CourseController::class, 'enroll'])
-     ->name('courses.enroll')
-     ->middleware('auth');
-     Route::get('/courses/{course}/enroll-form', [EnrollmentController::class, 'showEnrollForm'])
-     ->name('courses.enroll-form');
-     Route::post('/enrollments', [EnrollmentController::class, 'enroll'])
-     ->name('enrollments.store');
+Route::post('/promotions/{promotion}/enroll', [PromotionController::class, 'enroll'])->name('promotions.enroll');
+
+// Подгрузка формы в модальное окно
+Route::get('/promotions/enroll-form/{promotion}', [PromotionController::class, 'loadEnrollForm'])->name('promotions.enroll-form');
 
 // Категории курсов
 Route::resource('course-categories', CourseCategoryController::class)->only(['index', 'show']);
@@ -178,3 +207,10 @@ Route::middleware('auth')->group(function () {
     ->middleware('auth');
 });
 
+Route::prefix('survival-test')->group(function () {
+    Route::get('/', [SurvivalTestController::class, 'showTest'])->name('survival.test');
+    Route::post('/submit', [SurvivalTestController::class, 'submitTest'])->name('survival.submit');
+    Route::get('/results', [SurvivalTestController::class, 'showResults'])->name('survival.results');
+    Route::get('/results/{id}', [SurvivalTestController::class, 'showResults'])->name('survival.result');
+});
+Route::get('/content', [ContentController::class, 'index'])->name('content.index');

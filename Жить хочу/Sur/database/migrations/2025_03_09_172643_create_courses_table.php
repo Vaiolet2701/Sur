@@ -26,8 +26,10 @@ return new class extends Migration
             $table->decimal('price', 8, 2)->nullable();
             $table->decimal('latitude', 10, 7)->nullable();
             $table->decimal('longitude', 10, 7)->nullable();
-            $table->string('location_name')->nullable(); // Название места
-            $table->boolean('is_active')->default(true); // Рекомендую добавить флаг активности
+            $table->string('location_name')->nullable(); 
+            $table->boolean('is_active')->default(true); 
+            $table->text('provided_equipment')->nullable();
+            $table->text('required_equipment')->nullable(); 
             $table->timestamps();
 
             // Внешний ключ для категории

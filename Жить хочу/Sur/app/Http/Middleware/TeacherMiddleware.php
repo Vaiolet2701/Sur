@@ -11,19 +11,19 @@ class TeacherMiddleware
 {
     public function handle($request, Closure $next)
     {
-        /** @var User|null $user */
         $user = Auth::user();
         
-        if ($user === null || $user->isTeacher() === false) {
+        if ($user === null || $user->role !== 'teacher') {
             Log::warning('Попытка доступа к разделу преподавателя', [
                 'ip' => $request->ip(),
+                'user_id' => $user ? $user->id : null,
                 'attempted_url' => $request->url()
             ]);
             
             return redirect()->route('home')
                 ->with('error', 'Доступ разрешен только преподавателям');
         }
-
+    
         return $next($request);
     }
 }
